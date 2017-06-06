@@ -14,7 +14,6 @@ fn main() {
 }
 
 fn readfile(file: &String) {
-    const BUFFERSIZE: usize = 1024;
     let fd = File::open(file);
     if fd.is_ok() {
 
@@ -23,24 +22,31 @@ fn readfile(file: &String) {
         let metadata = fdu.metadata().unwrap();
 
         if metadata.is_file() {
-            let mut buffer = [0; BUFFERSIZE];
-
-            loop {
-                let rstat = fdu.read(&mut buffer);
-                if rstat.is_ok() {
-                    io::stdout().write(&buffer);
-                    
-                    if rstat.unwrap() < BUFFERSIZE {
-                        break;
-                    }
-                } else {
-                    break;
-                }
-            }
-            //let mut buf_reader = BufReader::new(fdu);
+            
+            print_file(fdu)
+            
         }
 
     } else {
         eprintln!("{}: No such file!", file);
     }
+}
+
+
+fn print_file(mut fd: File) {
+
+    const BUFFERSIZE: usize = 1024;
+    let mut buffer = [0; BUFFERSIZE];
+    loop {
+            let rstat = fd.read(&mut buffer);
+            if rstat.is_ok() {
+                io::stdout().write(&buffer);
+                
+                if rstat.unwrap() < BUFFERSIZE {
+                    break;
+                }
+            } else {
+                break;
+            }
+        }
 }
