@@ -15,9 +15,9 @@ fn main() {
 }
 
 fn readfile(file: &String) {
+    const BUFFERSIZE: usize = 1024;
     let fd = File::open(file);
     if fd.is_ok() {
-        println!("{}: File exists!", file);
 
         let mut fdu = fd.unwrap();
 
@@ -25,11 +25,20 @@ fn readfile(file: &String) {
 
         if metadata.is_file() {
             println!("Reading file {}", file);
-            let mut buffer = [0; 1024];
+            let mut buffer = [0; BUFFERSIZE];
 
-            fdu.read(&mut buffer);
-
-            io::stdout().write(&buffer);
+            loop {
+                let rstat = fdu.read(&mut buffer);
+                if rstat.is_ok() {
+                    io::stdout().write(&buffer);
+                    
+                    if rstat.unwrap() < BUFFERSIZE {
+                        break;
+                    }
+                } else {
+                    break;
+                }
+            }
             //let mut buf_reader = BufReader::new(fdu);
         }
 
