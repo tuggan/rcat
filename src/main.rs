@@ -7,7 +7,6 @@ use std::io::prelude::*;
 
 fn main() {
     let args: Vec<String> = env::args().collect();
-    println!("{:?}", &args[1..]);
 
     for file in &args[1..] {
         readfile(file);
@@ -24,7 +23,6 @@ fn readfile(file: &String) {
         let metadata = fdu.metadata().unwrap();
 
         if metadata.is_file() {
-            println!("Reading file {}", file);
             let mut buffer = [0; BUFFERSIZE];
 
             loop {
@@ -43,6 +41,6 @@ fn readfile(file: &String) {
         }
 
     } else {
-        println!("{}: No such file!", file);
+        eprintln!("{}: No such file!", file);
     }
 }
