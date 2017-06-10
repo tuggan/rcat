@@ -1,45 +1,53 @@
 use std::env;
 use std::io::{self, Write};
 use std::fs::File;
-use std::io::BufReader;
 use std::io::prelude::*;
+
+//#[cfg(unix)]
+//use std::os::unix::fs::MetadataExt;
+
+#[cfg(linux)]
+use std::os::linux::fs::MetadataExt;
+
+#[cfg(target_os="macos")]
+use std::os::macos::fs::MetadataExt;
 
 
 fn main() {
     let args: Vec<String> = env::args().collect();
 
     for file in &args[1..] {
-        readfile(file);
+        read_file(file);
     }
 }
 
-fn readfile(file: &String) {
-    let fd = File::open(file);
-    if fd.is_ok() {
-        let fdu = fd.unwrap();
-        let metadata = fdu.metadata().unwrap();
-        if metadata.is_file() {
-            print_file(fdu)
-        }
-    } else {
-        eprintln!("{}: No such file!", file);
-    }
-}
-
-
-fn print_file(mut fd: File) {
-    const BUFFERSIZE: usize = 1024;
-    let mut buffer = [0; BUFFERSIZE];
-        loop {
-        let rstat = fd.read(&mut buffer);
-        if rstat.is_ok() {
-            io::stdout().write(&buffer);
-
-            if rstat.unwrap() < BUFFERSIZE {
-                break;
+fn read_file(file: &String) {
+    let mut buffersize: usize = 1024;
+    match File::open(file) {
+        Ok(mut handle) => {
+            if let Ok(meta) = handle.metadata() {
+                let blk = meta.st_blksize();
+                if blk < std::usize::MAX as u64 {
+                    buffersize = blk as usize;
+                }
             }
-        } else {
-            break;
-    }
+
+            println!("Using buffersize: {:?}", buffersize);
+            let mut buffer = vec![0; buffersize];
+
+            while let Ok(n) = handle.read(&mut buffer) {
+                eprintln!("Data read: {}", n);
+                if n == 0 {
+                    break;
+                };
+                eprintln!("Read data!");
+                if let Err(e) = io::stdout().write_all(&buffer) {
+                    eprintln!("{}", e);
+                }
+            }
+        }
+        Err(error) => {
+            eprintln!("{}", error);
+        }
     }
 }
