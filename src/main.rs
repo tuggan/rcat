@@ -1,7 +1,7 @@
 use std::env;
-use std::io::{self, Write};
+use std::io::{self, Write, Read};
 use std::fs::File;
-use std::io::prelude::*;
+//use std::io::prelude::*;
 
 //#[cfg(unix)]
 //use std::os::unix::fs::MetadataExt;
