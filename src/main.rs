@@ -32,15 +32,12 @@ fn read_file(file: &String) {
                 }
             }
 
-            println!("Using buffersize: {:?}", buffersize);
             let mut buffer = vec![0; buffersize];
 
             while let Ok(n) = handle.read(&mut buffer) {
-                eprintln!("Data read: {}", n);
                 if n == 0 {
                     break;
                 };
-                eprintln!("Read data!");
                 if let Err(e) = io::stdout().write_all(&buffer) {
                     eprintln!("{}", e);
                 }
