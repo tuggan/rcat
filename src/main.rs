@@ -18,15 +18,7 @@ use std::env;
 use std::io::{self, Write, Read};
 use std::fs::File;
 
-//#[cfg(unix)]
-//use std::os::unix::fs::MetadataExt;
-
-#[cfg(linux)]
-use std::os::linux::fs::MetadataExt;
-
-#[cfg(target_os="macos")]
-use std::os::macos::fs::MetadataExt;
-
+mod file_helper;
 
 fn main() {
     let args: Vec<String> = env::args().collect();
@@ -40,11 +32,9 @@ fn read_file(file: &String) {
     let mut buffersize: usize = 1024;
     match File::open(file) {
         Ok(mut handle) => {
-            if let Ok(meta) = handle.metadata() {
-                let blk = meta.st_blksize();
-                if blk < std::usize::MAX as u64 {
-                    buffersize = blk as usize;
-                }
+
+            if let Ok(buffs) = file_helper::blocksize_as_usize(file) {
+                buffersize = buffs;
             }
 
             let mut buffer = vec![0; buffersize];
